@@ -1,0 +1,16 @@
+# Build outputs
+build/
+*.o
+*.a
+
+# Python
+__pycache__/
+*.pyc
+
+# Output files (generated, don't need in repo)
+outputs/*.json
+outputs/*.ngs
+
+# Logs
+*.log
+log/
