@@ -1,10 +1,13 @@
 #include <mpi.h>
 #include <iostream>
 #include <string>
+#include <climits>
 #include "graph.h"
 #include "partition.h"
 #include "metrics.h"
 #include "leader_election.h"
+#include "dijkstra.h"
+
 
 int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
@@ -65,6 +68,21 @@ int main(int argc, char* argv[]) {
             std::cout << "[leader] All nodes agree on leader: " << leader << "\n";
         }
     }
+    else if (algo == "dijkstra") {
+    std::vector<int> dist = run_dijkstra(g, p, source, rank, size, metrics);
+    if (rank == 0) {
+        print_metrics("Dijkstra", metrics);
+        // print first 10 distances as sanity check
+        std::cout << "[dijkstra] Sample distances from source " << source << ":\n";
+        for (int i = 0; i < std::min(10, g.num_nodes); i++) {
+            if (dist[i] < (INT_MAX / 2)) {
+                std::cout << "  node " << i << ": " << dist[i] << "\n";
+            } else {
+                std::cout << "  node " << i << ": unreachable\n";
+            }
+        }
+    }
+}
 
     MPI_Finalize();
     return 0;
