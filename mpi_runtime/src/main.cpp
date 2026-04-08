@@ -4,6 +4,7 @@
 #include "graph.h"
 #include "partition.h"
 #include "metrics.h"
+#include "leader_election.h"
 
 int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
@@ -53,7 +54,17 @@ int main(int argc, char* argv[]) {
                   << " with " << size << " ranks\n";
     }
 
-    // algorithms will be called here once written
+    // leader election algorithm
+    Metrics metrics = {0, 0, 0, 0.0};
+
+    if (algo == "leader") {
+        int leader = run_leader_election(g, p, rank, size, rounds, metrics);
+        if (rank == 0) {
+            print_metrics("Leader Election", metrics);
+            // verify all ranks agree
+            std::cout << "[leader] All nodes agree on leader: " << leader << "\n";
+        }
+    }
 
     MPI_Finalize();
     return 0;
