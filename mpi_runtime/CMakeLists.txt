@@ -5,9 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(MPI REQUIRED)
+find_package(GTest REQUIRED)
 
-include_directories(include ${MPI_CXX_INCLUDE_PATH})
+include_directories(include ${MPI_CXX_INCLUDE_PATH} ${GTEST_INCLUDE_DIRS})
 
+# main executable
 add_executable(ngs_mpi
     src/main.cpp
     src/graph.cpp
@@ -16,5 +18,24 @@ add_executable(ngs_mpi
     src/dijkstra.cpp
     src/metrics.cpp
 )
-
 target_link_libraries(ngs_mpi ${MPI_CXX_LIBRARIES})
+
+# unit tests (no MPI)
+add_executable(unit_tests
+    tests/unit_tests.cpp
+    src/graph.cpp
+    src/partition.cpp
+    src/metrics.cpp
+)
+target_link_libraries(unit_tests ${GTEST_LIBRARIES} pthread)
+
+# mpi tests
+add_executable(mpi_tests
+    tests/mpi_tests.cpp
+    src/graph.cpp
+    src/partition.cpp
+    src/leader_election.cpp
+    src/dijkstra.cpp
+    src/metrics.cpp
+)
+target_link_libraries(mpi_tests ${MPI_CXX_LIBRARIES} ${GTEST_LIBRARIES} pthread)
