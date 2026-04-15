@@ -18,7 +18,7 @@ Partition load_partition(const std::string& path) {
     Partition p;
     p.num_ranks = j["num_ranks"];
     p.num_nodes = j["num_nodes"];
-    p.ownership.resize(p.num_nodes);
+    p.ownership.assign(p.num_nodes, -1);
 
     for (const auto& [key, val] : j["ownership"].items()) {
         int node_id = std::stoi(key);
@@ -27,6 +27,15 @@ Partition load_partition(const std::string& path) {
             throw std::runtime_error("Node id out of range in partition file");
         }
         p.ownership[node_id] = rank;
+    }
+    // verify every node was assigned a valid rank
+    for (int i = 0; i < p.num_nodes; i++) {
+        if (p.ownership[i] == -1) {
+            throw std::runtime_error("Node " + std::to_string(i) + " has no rank assignment in partition file");
+        }
+        if (p.ownership[i] < 0 || p.ownership[i] >= p.num_ranks) {
+            throw std::runtime_error("Node " + std::to_string(i) + " assigned to invalid rank " + std::to_string(p.ownership[i]));
+        }
     }
 
     std::cout << "[partition] Loaded " << p.num_nodes << " nodes across "

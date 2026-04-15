@@ -51,6 +51,24 @@ int main(int argc, char* argv[]) {
         MPI_Finalize();
         return 1;
     }
+    
+    if (p.num_ranks != size) {
+        if (rank == 0) {
+            std::cerr << "Error: partition has " << p.num_ranks
+                      << " ranks but MPI was launched with " << size << "\n";
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    if (p.num_nodes != g.num_nodes) {
+        if (rank == 0) {
+            std::cerr << "Error: partition has " << p.num_nodes
+                      << " nodes but graph has " << g.num_nodes << "\n";
+        }
+        MPI_Finalize();
+        return 1;
+    }
 
     if (rank == 0) {
         std::cout << "Running algorithm: " << algo
