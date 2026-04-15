@@ -39,6 +39,23 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    if (algo != "leader" && algo != "dijkstra") {
+        if (rank == 0) {
+            std::cerr << "Error: unknown algorithm '" << algo
+                      << "'. Must be 'leader' or 'dijkstra'\n";
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    if (rounds <= 0) {
+        if (rank == 0) {
+            std::cerr << "Error: --rounds must be a positive integer\n";
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
     // load graph and partition on all ranks
     Graph g;
     Partition p;
@@ -51,7 +68,7 @@ int main(int argc, char* argv[]) {
         MPI_Finalize();
         return 1;
     }
-    
+
     if (p.num_ranks != size) {
         if (rank == 0) {
             std::cerr << "Error: partition has " << p.num_ranks
@@ -65,6 +82,15 @@ int main(int argc, char* argv[]) {
         if (rank == 0) {
             std::cerr << "Error: partition has " << p.num_nodes
                       << " nodes but graph has " << g.num_nodes << "\n";
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    if (source < 0 || source >= g.num_nodes) {
+        if (rank == 0) {
+            std::cerr << "Error: --source " << source
+                      << " is out of range [0, " << g.num_nodes - 1 << "]\n";
         }
         MPI_Finalize();
         return 1;
