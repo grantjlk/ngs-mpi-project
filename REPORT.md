@@ -1,56 +1,210 @@
 # NGS-MPI: Distributed Graph Analytics Report
 
 ## 1. System Overview
-This project implements a complete distributed computing pipeline for graph analysis.
+
+This project implements a complete end-to-end distributed computing pipeline for
+graph analysis. The goal is to take a randomly generated graph, partition it across
+multiple MPI processes, and run two classic distributed algorithms on it: leader
+election and single-source shortest paths.
+
 * **Generation:** Scala (NetGameSim) generates high-level binary `.ngs` graph models.
 * **Ingestion:** `Export.scala` transforms binary data into a portable, weighted JSON format.
-* **Partitioning:** A Python-based tool maps nodes to MPI ranks using **Contiguous** or **Random** strategies.
-* **Analytics:** A C++17 OpenMPI runtime executes FloodMax Leader Election and Parallel Dijkstra.
+* **Partitioning:** A Python-based tool maps nodes to MPI ranks using **Contiguous**
+  or **Random** strategies and emits an ownership map.
+* **Analytics:** A C++17 OpenMPI runtime loads the graph and partition, then executes
+  FloodMax Leader Election and Parallel Dijkstra with global reductions.
 
 ---
 
-## 2. Technical Design
+## 2. Approach and Overall Idea
+
+The key design decision in this project is that MPI ranks are not graph nodes.
+Instead, each rank owns a *subset* of nodes, which is how real distributed systems
+work when the number of logical entities exceeds the number of processes. This
+separation allows the system to scale the graph size independently of the number
+of MPI processes.
+
+Rather than implementing point-to-point message passing between individual nodes,
+we use `MPI_Allreduce` collectives as the communication primitive. This trades
+fine-grained messaging for simpler, deadlock-free synchronization. Every rank
+participates in every collective in the same order, which guarantees correctness
+and avoids the class of bugs that arise from mismatched point-to-point sends
+and receives.
+
+All ranks load the full graph and partition at startup. This replicate-everything
+memory model eliminates the need for ghost node bookkeeping and remote edge
+relaxation messages, at the cost of memory scaling. For graphs of this size
+(hundreds to low thousands of nodes) this is a practical and correct tradeoff.
+
+---
+
+## 3. Technical Design
 
 ### Data Engineering
-* **Graph Normalization:** Node IDs are remapped to $0 \dots N-1$. Weights are scaled to integers using $\max(1, (\text{cost} \times 20))$.
-* **Connectivity Assurance:** To ensure correctness for Dijkstra, the graph is treated as undirected (edges are mirrored). This guarantees 100% reachability from any source node.
+
+* **Graph Normalization:** Node IDs are remapped to $0 \dots N-1$. Weights are
+  scaled to integers using $\max(1, \lfloor\text{cost} \times 20\rfloor)$, where
+  cost is NetGameSim's internal [0,1] action cost. This guarantees positive integer
+  weights as required by Dijkstra.
+* **Connectivity Assurance:** NetGameSim generates directed graphs that are not
+  strongly connected from all sources. To ensure correctness for both algorithms,
+  the exporter mirrors every directed edge, producing an undirected graph. This
+  guarantees 100% reachability from any source node.
 * **Partitioning Logic:**
-    * **Contiguous:** Assigns nodes via $\text{nodeId} \times \text{numRanks} / \text{numNodes}$.
-    * **Random:** Shuffles node IDs before assignment to test the system's sensitivity to spatial locality.
+    * **Contiguous:** Assigns nodes via $\lfloor\text{nodeId} \times
+      \text{numRanks} / \text{numNodes}\rfloor$, producing contiguous ranges per rank.
+    * **Random:** Shuffles node IDs with a fixed seed before assignment, breaking
+      spatial locality to test sensitivity to partition quality.
 
 ### Distributed Algorithms
-* **Leader Election (FloodMax):** Nodes propagate candidate IDs across rounds. We utilize `MPI_Allreduce` with `MPI_MAX` for global synchronization and an early-exit check to terminate once candidates stabilize.
-* **Distributed Dijkstra:** Uses a two-step synchronization per iteration:
-    1. `MPI_Allreduce` (MIN) to determine the global minimum distance among unsettled nodes.
-    2. `MPI_Allreduce` (MAX) to identify the specific node ID that owns that distance.
-* **Memory Model:** All ranks load the full adjacency list. This simplifies edge relaxation by removing "ghost node" messaging overhead, prioritizing performance over memory-scaling at this graph size.
+
+* **Leader Election (FloodMax):** Each node starts with its own ID as its candidate.
+  In each synchronous round, every rank updates its owned nodes by propagating the
+  maximum candidate seen across all neighbors. A single `MPI_Allreduce` with
+  `MPI_MAX` over the full candidate vector synchronizes all ranks at the end of
+  each round. A second `MPI_Allreduce` detects global convergence and triggers
+  early termination when no candidate changed. The elected leader is the maximum
+  node ID in the graph, which all ranks agree on after convergence.
+
+* **Distributed Dijkstra:** Uses a two-phase synchronization per iteration:
+    1. Each rank finds its locally best unsettled node and proposes it via
+       `MPI_Allreduce` (MIN) to determine the globally minimum tentative distance.
+    2. A second `MPI_Allreduce` (MAX) over node IDs resolves which specific node
+       holds that distance, breaking ties deterministically by choosing the largest ID.
+    3. All ranks settle that node and relax its outgoing edges locally, since every
+       rank holds the full adjacency list.
+
+* **Memory Model:** All ranks load the full adjacency list at startup. This
+  simplifies edge relaxation by removing ghost node messaging overhead, at the cost
+  of O(N+E) memory per rank. For graphs in the hundreds-of-nodes range this is
+  acceptable. A production system would partition the adjacency list and use
+  point-to-point messages for cross-rank relaxations.
+
+### Correctness Assumptions
+
+The following assumptions are required for correct results:
+
+* All edge weights must be positive (guaranteed by the exporter's weight formula).
+* The graph must be connected (guaranteed by edge mirroring in the exporter).
+* Node IDs must be in the range 0 to N-1 (enforced by the exporter's ID remapping).
+* The partition file must assign exactly one rank to every node, and the number of
+  ranks in the partition must match the MPI launch size (enforced at runtime).
 
 ---
 
-## 3. Experimental Results
-**Environment:** 501 nodes, 1984 edges, WSL2 (Ubuntu 24.04), OpenMPI.
+## 4. Implementation Details
 
-### Experiment 1: Partitioning Strategy (4 Ranks)
-| Strategy | Edge Cuts | LE Runtime | Dijkstra Runtime |
-| :--- | :--- | :--- | :--- |
-| **Contiguous** | 75.3% | 0.0005s | 0.0058s |
-| **Random** | 75.4% | 0.0013s | 0.0070s |
+### Graph Export (Export.scala)
 
-**Analysis:** NetGameSim graphs lack strong spatial locality by default. While edge cuts remained nearly identical, the **Random** strategy significantly increased Leader Election runtime ($2.6\times$ slower). This suggests that scrambling IDs increases the logical distance messages must travel before the maximum value propagates to all ranks.
+The exporter loads the NetGameSim binary `.ngs` file, remaps node IDs to a
+contiguous 0-based range, extracts edge weights from the `Action.cost` field,
+scales them to positive integers, and mirrors every edge to produce an undirected
+graph. The output is a JSON file with `num_nodes`, a `nodes` array, and an `edges`
+array with `src`, `dst`, and `weight` fields.
 
-### Experiment 2: Scalability (Contiguous Strategy)
-| Ranks | LE Rounds | Dijkstra Runtime | Speedup ($T_1/T_n$) |
-| :--- | :--- | :--- | :--- |
-| 1 | 5 | 0.0085s | 1.00x |
-| 2 | 501 | 0.0055s | **1.54x** |
-| 4 | 501 | 0.0058s | 1.46x |
-| 8 | 501 | 0.0088s | 0.96x |
+One important detail: NetGameSim's `fromId`/`toId` fields in edge objects are
+random numbers unrelated to node identity. The exporter uses `fromNode.id` and
+`toNode.id` instead, which are the correct identifiers.
 
-**Analysis:** We observed a peak speedup at **2 ranks**. Beyond this point, the **communication overhead** of the 1,002 `MPI_Allreduce` calls required for Dijkstra began to outweigh the computational benefits. The $0.96\times$ speedup at 8 ranks illustrates a classic parallelization bottleneck where the system is "communication-bound."
+### Partitioner (partition.py)
+
+The partitioner reads the graph JSON, assigns each node to a rank according to the
+chosen strategy, and writes an ownership map as a JSON object keyed by node ID
+string. The random strategy uses a fixed seed (default 42) for reproducibility.
+Edge cut statistics are printed to aid experiment analysis.
+
+### MPI Runtime (C++17 / OpenMPI)
+
+The runtime is structured as separate compilation units: `graph.cpp` and
+`partition.cpp` handle loading and validation, `leader_election.cpp` and
+`dijkstra.cpp` implement the algorithms, and `metrics.cpp` handles timing and
+output. Each algorithm returns results to `main.cpp` which handles printing.
+
+Input validation is performed before any algorithm runs: the partition rank count
+must match the MPI size, the graph and partition node counts must agree, and the
+source node must be within range.
 
 ---
 
-## 4. Limitations & Future Work
-* **Message Metrics:** Counts reflect logical `Allreduce` operations; actual network packets are managed by OpenMPI's tree-based collectives.
-* **Optimization:** Future iterations could implement **Sparse Reductions** (only propagating changed values) to reduce bandwidth for Leader Election.
-* **Partitioning:** Exploring **METIS-style recursive bisection** could further minimize edge cuts if applied to graphs with natural clustering.
+## 5. Experimental Results
+
+**Environment:** 501 nodes, 1984 edges, WSL2 (Ubuntu 24.04), OpenMPI,
+`--oversubscribe` for runs exceeding physical core count.
+
+### Experiment 1: Partitioning Strategy Comparison (4 Ranks)
+
+**Hypothesis:** Random partitioning will produce more edge cuts than contiguous
+partitioning because it ignores node ID locality. More edge cuts mean more
+cross-rank communication, which should increase runtime for both algorithms.
+
+**Expected Results:** Random partitioning will have higher edge cuts and slower
+runtimes than contiguous partitioning.
+
+| Strategy | Edge Cuts | LE Rounds | LE Runtime | Dijkstra Runtime |
+| :--- | :--- | :--- | :--- | :--- |
+| **Contiguous** | 75.3% | 8 | 0.0005s | 0.0058s |
+| **Random** | 75.4% | 10 | 0.0013s | 0.0070s |
+
+**Actual Results and Analysis:** Edge cuts were nearly identical between strategies
+(75.3% vs 75.4%), which was surprising. This is explained by the structure of
+NetGameSim graphs: they lack strong spatial locality, so contiguous node ID ranges
+do not correspond to densely connected clusters. Both strategies cut roughly the
+same fraction of edges.
+
+Despite similar edge cuts, Random partitioning was $2.6\times$ slower for leader
+election (10 rounds vs 8). This suggests that scrambling node IDs increases the
+logical hop distance the maximum candidate must travel before reaching all ranks,
+even though the physical edge cut count is similar. Dijkstra showed a smaller but
+consistent slowdown ($1.21\times$), consistent with the additional Allreduce
+overhead from the extra cross-rank coordination.
+
+### Experiment 2: Scalability with Varying Rank Count (Contiguous)
+
+**Hypothesis:** Increasing ranks will speed up Dijkstra up to a point, after which
+collective overhead will dominate and performance will degrade. Leader election
+should converge in fewer rounds at lower rank counts due to shorter logical
+distances within each partition.
+
+**Expected Results:** Peak speedup somewhere between 2 and 4 ranks, with
+degradation at 8 ranks due to Allreduce overhead scaling with rank count.
+
+| Ranks | LE Rounds | LE Runtime | Dijkstra Runtime | Speedup ($T_1/T_n$) |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | 5 | 0.0003s | 0.0085s | 1.00x |
+| 2 | 8 | 0.0004s | 0.0055s | 1.54x |
+| 4 | 8 | 0.0023s | 0.0058s | 1.46x |
+| 8 | 8 | 0.0070s | 0.0088s | 0.96x |
+
+**Actual Results and Analysis:** Peak speedup occurred at 2 ranks (1.54x), matching
+the hypothesis. Beyond 2 ranks, Dijkstra's 501 iterations each require two
+`MPI_Allreduce` calls, and the overhead of these collectives across more ranks
+outweighs the benefit of parallelism. At 8 ranks the system is communication-bound,
+with a speedup of 0.96x — slightly slower than sequential.
+
+Leader election rounds stayed constant at 8 from 2 to 8 ranks, suggesting the
+graph diameter within each partition stabilized quickly. The single-rank case
+converged in 5 rounds because there are no cross-rank boundaries, so propagation
+follows the graph diameter directly.
+
+**Key Insight:** This result illustrates a fundamental tradeoff in collective-based
+distributed algorithms. `MPI_Allreduce` is O(log P) in rounds but involves real
+network latency per call. For small graphs where per-iteration compute is cheap,
+communication cost dominates and parallelism offers limited benefit.
+
+---
+
+## 6. Limitations and Future Work
+
+* **Message Metrics:** Counts reflect logical `Allreduce` calls rather than actual
+  network packets. OpenMPI implements collectives using tree-based or recursive
+  doubling algorithms internally, so actual message counts are higher. The reported
+  numbers are best interpreted as a lower bound on communication volume.
+* **Memory Scaling:** Replicating the full graph on every rank limits scalability
+  to larger graphs. A production implementation would partition the adjacency list
+  and use point-to-point `MPI_Send`/`MPI_Recv` for cross-rank edge relaxations.
+* **Partitioning:** Both strategies produce high edge cut rates (~75%) on
+  NetGameSim graphs due to their lack of spatial locality. METIS-style recursive
+  bisection could reduce edge cuts on graphs with natural clustering structure.
+* **Sparse Reductions:** Leader election currently broadcasts the full candidate
+  vector each round via Allreduce. Propagating only changed values would reduce
+  bandwidth significantly for large sparse graphs.

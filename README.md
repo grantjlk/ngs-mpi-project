@@ -1,85 +1,127 @@
-Sure! Here it is with no em dashes:
-markdown# NGS-MPI: Distributed Graph Algorithms with MPI
+# NGS-MPI: Distributed Graph Algorithms with MPI
 
-End-to-end distributed computing pipeline that generates random graphs using
-NetGameSim, partitions them across MPI ranks, and runs distributed leader election
-and Dijkstra shortest paths using C++17 and OpenMPI.
+End-to-end distributed computing pipeline that generates random graphs using NetGameSim, partitions them across MPI ranks, and runs distributed leader election and Dijkstra shortest paths using C++17 and OpenMPI.
 
+---
+## Quickstart
+
+Run the project end-to-end using the included graph:
+
+```bash
+# build
+cmake -S mpi_runtime -B build
+cmake --build build
+
+# partition graph
+python3 tools/partition/partition.py outputs/graph.json \
+  --ranks 4 --out outputs/part.json --strategy contiguous
+
+# run leader election
+mpirun -n 4 ./build/ngs_mpi \
+  --graph outputs/graph.json \
+  --part outputs/part.json \
+  --algo leader --rounds 200
+
+# run dijkstra
+mpirun -n 4 ./build/ngs_mpi \
+  --graph outputs/graph.json \
+  --part outputs/part.json \
+  --algo dijkstra --source 0
+```
+---
 ## Pipeline
-NetGameSim (Scala) -> Export.scala -> graph.json
-|
-partition.py -> part.json
-|
+
+```
+NetGameSim (Scala)
+    ↓
+Export.scala → graph.json
+    ↓
+partition.py → part.json
+    ↓
 C++17 MPI runtime (ngs_mpi)
-- Leader Election (FloodMax)
-- Dijkstra Shortest Paths
--> metrics output
+    - Leader Election (FloodMax)
+    - Dijkstra Shortest Paths
+    ↓
+Metrics output
+```
+
+---
 
 ## Language Stack
 
-- Graph generation: Scala/SBT (NetGameSim)
-- Graph export: Scala (Export.scala)
-- Graph partitioning: Python 3
-- Core MPI runtime and algorithms: C++17 + OpenMPI
+* Graph generation: Scala / SBT (NetGameSim)
+* Graph export: Scala (Export.scala)
+* Graph partitioning: Python 3
+* Core MPI runtime and algorithms: C++17 + OpenMPI
 
-The core distributed algorithms (leader election and Dijkstra) are implemented
-in C++17 with OpenMPI. This is the required language stack for the MPI runtime.
+The distributed algorithms (leader election and Dijkstra) are implemented in C++17 using OpenMPI.
+
+---
 
 ## Prerequisites
 
 Install the following on Ubuntu or WSL2:
 
 ```bash
-# Java (required for NetGameSim and Export.scala)
+# Java (NetGameSim + exporter)
 sudo apt install openjdk-17-jdk
 
-# SBT (Scala build tool, required to build NetGameSim)
+# SBT
 echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | \
   sudo tee /etc/apt/sources.list.d/sbt.list
 curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | \
   sudo apt-key add
 sudo apt update && sudo apt install sbt
 
-# Python 3
+# Python
 sudo apt install python3
 
-# OpenMPI (required for the MPI runtime -- do not use MPICH on WSL2)
+# OpenMPI (required — do not use MPICH on WSL2)
 sudo apt install libopenmpi-dev openmpi-bin
 
-# CMake and C++ compiler
+# Build tools
 sudo apt install cmake g++
 
-# Google Test (required for unit and MPI tests)
+# Testing
 sudo apt install libgtest-dev
 ```
 
+---
+
 ## Repository Structure
-NetGameSim/                        Upstream NetGameSim repo (lives outside this repo,
-see Setup below)
+
+```
+NetGameSim/                 (external, cloned separately)
 tools/
-graph_export/
-export.sh                      Shell script to invoke Export.scala
-Export.scala                   Custom graph exporter (copy into NetGameSim to use)
-partition/
-partition.py                   Graph partitioner (contiguous or random strategy)
+  graph_export/
+    export.sh
+    Export.scala
+  partition/
+    partition.py
 mpi_runtime/
-src/                             C++17 MPI runtime and algorithm implementations
-include/                         Shared headers
-CMakeLists.txt                   CMake build configuration
-configs/                           Example NetGameSim configuration files
+  src/
+  include/
+  CMakeLists.txt
+configs/
 experiments/
-run_experiments.sh               Script to reproduce all experiment runs
+  run_experiments.sh
 outputs/
-graph.json                       Pre-generated 501-node graph (committed)
-REPORT.md                          Experiment writeup
-README.md                          This file
+  graph.json
+REPORT.md
+README.md
+```
+
+---
 
 ## Setup
 
-This project expects NetGameSim to be cloned as a sibling directory next to this repo:
+This project expects NetGameSim to be a sibling directory:
+
+```
 453project/
-NetGameSim/       <- clone from upstream
-my-project/       <- this repo
+  NetGameSim/
+  my-project/
+```
 
 Clone NetGameSim:
 
@@ -87,6 +129,8 @@ Clone NetGameSim:
 cd ~/453project
 git clone <netgamesim-repo-url> NetGameSim
 ```
+
+---
 
 ## Build
 
@@ -97,17 +141,19 @@ cmake -S mpi_runtime -B build
 cmake --build build
 ```
 
-This produces three binaries in `build/`:
-- `ngs_mpi` -- main MPI runtime
-- `unit_tests` -- unit tests (no MPI required)
-- `mpi_tests` -- MPI integration tests
+Binaries produced in `build/`:
+
+* `ngs_mpi` — main runtime
+* `unit_tests` — unit tests
+* `mpi_tests` — MPI tests
+
+---
 
 ## Running the Pipeline
 
-A pre-generated `outputs/graph.json` is included in the repository. You can skip
-to the Partition step if you do not want to set up NetGameSim.
+A pre-generated `outputs/graph.json` is included, so NetGameSim setup can be skipped.
 
-### Step 1: Generate a Graph (optional)
+### Step 1: Generate Graph (optional)
 
 ```bash
 cd ~/453project/NetGameSim
@@ -117,13 +163,11 @@ java -Xms2G -Xmx8G -jar target/scala-3.2.2/netmodelsim.jar TestGraph
 cd ..
 ```
 
-Note: NetGameSim uses ThreadLocalRandom internally and is not fully reproducible
-across runs even with the same seed. Use the committed graph.json for exact
-reproducibility.
+Note: NetGameSim is not fully reproducible due to ThreadLocalRandom. Use the committed graph for consistency.
+
+---
 
 ### Step 2: Export to JSON (optional)
-
-First copy Export.scala into NetGameSim and rebuild:
 
 ```bash
 cp tools/graph_export/Export.scala \
@@ -134,27 +178,29 @@ sbt clean assembly
 cd ~/453project/my-project
 ```
 
-Then run the exporter:
-
 ```bash
 ./tools/graph_export/export.sh \
   ~/453project/NetGameSim/TestGraph.ngs \
   outputs/graph.json
 ```
 
+---
+
 ### Step 3: Partition the Graph
 
 ```bash
-# Contiguous partitioning
+# Contiguous
 python3 tools/partition/partition.py outputs/graph.json \
   --ranks 4 --out outputs/part.json --strategy contiguous
 
-# Random partitioning
+# Random
 python3 tools/partition/partition.py outputs/graph.json \
   --ranks 4 --out outputs/part.json --strategy random
 ```
 
-### Step 4: Run the Algorithms
+---
+
+### Step 4: Run Algorithms
 
 ```bash
 # Leader election
@@ -163,37 +209,97 @@ mpirun -n 4 ./build/ngs_mpi \
   --part outputs/part.json \
   --algo leader --rounds 200
 
-# Dijkstra shortest paths from source node 0
+# Dijkstra
 mpirun -n 4 ./build/ngs_mpi \
   --graph outputs/graph.json \
   --part outputs/part.json \
   --algo dijkstra --source 0
 ```
 
-To run with more ranks than physical cores:
+Oversubscribe if needed:
 
 ```bash
-mpirun --oversubscribe -n 8 ./build/ngs_mpi \
-  --graph outputs/graph.json \
-  --part outputs/part.json \
-  --algo leader --rounds 200
+mpirun --oversubscribe -n 8 ./build/ngs_mpi ...
 ```
 
-## Running Tests
+---
 
-Tests must be run from the `mpi_runtime/` directory:
+## Distributed Execution Model
+
+* Each MPI rank loads the full graph
+* Each rank owns a subset of nodes defined by the partition
+* Execution follows a bulk-synchronous model using MPI collectives
+
+### Leader Election (FloodMax)
+
+* Each node maintains a candidate ID
+* Each round:
+
+  * Local updates propagate values
+  * `MPI_Allreduce (MAX)` synchronizes global state
+* Terminates when no changes occur globally
+
+### Dijkstra
+
+* Each iteration:
+
+  * Each rank computes its local minimum tentative distance
+  * Global minimum selected via `MPI_Allreduce`
+  * All ranks relax edges from that node
+* Continues until all nodes are settled
+
+---
+
+## Input Validation
+
+The runtime validates all inputs before execution:
+
+* Graph file must be valid JSON with consistent node count
+* Partition file must:
+
+  * Assign every node exactly once
+  * Use valid ranks in `[0, num_ranks)`
+  * Match MPI world size
+* CLI arguments:
+
+  * `--algo` must be `leader` or `dijkstra`
+  * `--rounds` must be positive
+  * `--source` must be within node range
+
+Invalid inputs produce descriptive errors and exit cleanly.
+
+---
+
+## Metrics
+
+The runtime reports:
+
+* Runtime (seconds)
+* Iterations
+* Allreduce calls (logical communication steps)
+* Approximate bytes sent
+
+Note:
+MPI collectives do not correspond directly to point-to-point messages.
+We approximate communication cost as **O(ranks)** per collective for comparison purposes.
+
+---
+
+## Running Tests
 
 ```bash
 cd mpi_runtime
 
-# Unit tests (no MPI required)
+# Unit tests
 ../build/unit_tests
 
-# MPI integration tests
+# MPI tests
 mpirun -n 4 ../build/mpi_tests
 ```
 
 All 11 tests should pass (7 unit, 4 MPI).
+
+---
 
 ## Reproducing Experiments
 
@@ -201,21 +307,27 @@ All 11 tests should pass (7 unit, 4 MPI).
 ./experiments/run_experiments.sh
 ```
 
-Results are saved to `experiments/results.txt`. The script runs:
-- Experiment 1: contiguous vs random partitioning at 4 ranks
-- Experiment 2: scalability at 1, 2, 4, and 8 ranks using contiguous partitioning
+Outputs saved to `experiments/results.txt`.
+
+Experiments include:
+
+* Contiguous vs random partitioning (4 ranks)
+* Scalability across 1, 2, 4, 8 ranks
+
+---
+
+## Assumptions and Limitations
+
+* Graphs are treated as undirected (exporter adds reverse edges)
+* Graph is assumed to be connected
+* Dijkstra requires non-negative edge weights
+* Full graph is replicated on all ranks (not memory optimized)
+* Communication uses synchronous collectives (no async overlap)
+
+---
 
 ## Notes
 
-- `outputs/graph.json` is committed so the grader can skip NetGameSim setup
-- Use OpenMPI, not MPICH. MPICH 4.2.0 returns size=1 for all ranks on WSL2
-- All algorithms assume an undirected graph. The exporter adds reverse edges to
-  guarantee full connectivity since NetGameSim directed graphs are not strongly
-  connected from all sources
-- The 8-rank experiment requires --oversubscribe on machines with fewer than 8 cores
-Once you paste this into README.md, commit everything together:
-bashcd ~/453project/my-project
-git add README.md REPORT.md tools/graph_export/Export.scala
-git commit -m "Add README, finalize REPORT, add Export.scala"
-git push
-Then just add the TA and submit. How does it look?
+* `outputs/graph.json` is included for reproducibility
+* Use OpenMPI — MPICH may fail on WSL2
+* Leader election correctness depends on graph connectivity
