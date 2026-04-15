@@ -49,7 +49,8 @@ int run_leader_election(
         // simple approach: allreduce with MAX so every rank
         // ends up with the global best candidate per node
         std::vector<int> global_candidate(num_nodes);
-        MPI_Allreduce(
+        // checked mpi call
+        int rc1 = MPI_Allreduce(
             candidate.data(),
             global_candidate.data(),
             num_nodes,
@@ -57,11 +58,13 @@ int run_leader_election(
             MPI_MAX,
             MPI_COMM_WORLD
         );
+        if (rc1 != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc1);
 
         // track if anything changed globally
         int local_changed  = changed ? 1 : 0;
         int global_changed = 0;
-        MPI_Allreduce(
+        // checked mpi call
+        int rc2 = MPI_Allreduce(
             &local_changed,
             &global_changed,
             1,
@@ -69,6 +72,7 @@ int run_leader_election(
             MPI_MAX,
             MPI_COMM_WORLD
         );
+        if (rc2 != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc2);
 
         metrics.messages_sent += num_ranks;
         metrics.bytes_sent    += num_ranks * num_nodes * sizeof(int);

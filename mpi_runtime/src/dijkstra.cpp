@@ -44,7 +44,8 @@ std::vector<int> run_dijkstra(
 
         // find global minimum distance across all ranks
         int global_best_dist = INF;
-        MPI_Allreduce(
+        //checked mpi all reduce call
+        int rc1 = MPI_Allreduce(
             &local_best_dist,
             &global_best_dist,
             1,
@@ -52,6 +53,7 @@ std::vector<int> run_dijkstra(
             MPI_MIN,
             MPI_COMM_WORLD
         );
+        if (rc1 != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc1);
 
         metrics.messages_sent += num_ranks;
         metrics.bytes_sent    += num_ranks * sizeof(int);
@@ -67,7 +69,8 @@ std::vector<int> run_dijkstra(
 
         // use max reduction to find the node id
         int reduced_best_node = -1;
-        MPI_Allreduce(
+        // use checked mpi call
+        int rc2 = MPI_Allreduce(
             &global_best_node,
             &reduced_best_node,
             1,
@@ -75,6 +78,7 @@ std::vector<int> run_dijkstra(
             MPI_MAX,
             MPI_COMM_WORLD
         );
+        if (rc2 != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc2);
         global_best_node = reduced_best_node;
 
         metrics.messages_sent += num_ranks;
@@ -87,7 +91,8 @@ std::vector<int> run_dijkstra(
 
         // all ranks relax edges of u since all have full graph
         for (const auto& [v, w] : g.adj[u]) {
-            if (!settled[v] && dist[u] + w < dist[v]) {
+            // inf guard ensures addition cant overflow before we do it
+            if (!settled[v] && dist[u] < INF - w && dist[u] + w < dist[v]) {
                 dist[v] = dist[u] + w;
             }
         }
