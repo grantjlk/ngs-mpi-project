@@ -1,4 +1,5 @@
 #include "partition.h"
+#include "logger.h"
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include <stdexcept>
@@ -38,8 +39,7 @@ Partition load_partition(const std::string& path) {
         }
     }
 
-    std::cout << "[partition] Loaded " << p.num_nodes << " nodes across "
-              << p.num_ranks << " ranks\n";
+    LOG_INFO("[partition] Loaded " << p.num_nodes << " nodes across " << p.num_ranks << " ranks");
 
     return p;
 }

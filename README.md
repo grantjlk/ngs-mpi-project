@@ -29,6 +29,34 @@ mpirun -n 4 ./build/ngs_mpi \
   --algo dijkstra --source 0
 ```
 ---
+
+## Reproducibility
+
+### Graph Generation
+
+NetGameSim uses `ThreadLocalRandom`, which cannot be externally seeded.  
+As a result, graph generation is not fully reproducible, even if a seed is specified in configuration files.
+
+### Canonical Dataset
+
+To ensure consistent grading and reproducibility:
+
+- The repository includes a pre-generated graph:  
+  `outputs/graph.json`
+- This file is treated as the **canonical dataset**
+- All experiments reported in `REPORT.md` were run using this graph
+
+Graders should use this file to reproduce results without relying on NetGameSim.
+
+### Partitioning
+
+Graph partitioning **is reproducible**:
+
+- The partitioning tool supports a `--seed` flag
+- Default seed is `42`
+- Given the same input graph and seed, partition outputs are deterministic
+
+---
 ## Pipeline
 
 ```
@@ -163,7 +191,6 @@ java -Xms2G -Xmx8G -jar target/scala-3.2.2/netmodelsim.jar TestGraph
 cd ..
 ```
 
-Note: NetGameSim is not fully reproducible due to ThreadLocalRandom. Use the committed graph for consistency.
 
 ---
 
@@ -288,16 +315,17 @@ We approximate communication cost as **O(ranks)** per collective for comparison 
 ## Running Tests
 
 ```bash
+# Unit tests — must be run from the mpi_runtime/ directory
+# so that relative paths like "tests/small_graph.json" resolve correctly
 cd mpi_runtime
-
-# Unit tests
 ../build/unit_tests
 
-# MPI tests
+# MPI tests — also run from mpi_runtime/
 mpirun -n 4 ../build/mpi_tests
 ```
 
 All 11 tests should pass (7 unit, 4 MPI).
+
 
 ---
 
@@ -329,5 +357,5 @@ Experiments include:
 ## Notes
 
 * `outputs/graph.json` is included for reproducibility
-* Use OpenMPI — MPICH may fail on WSL2
+* Use OpenMPI, MPICH may fail on WSL2
 * Leader election correctness depends on graph connectivity

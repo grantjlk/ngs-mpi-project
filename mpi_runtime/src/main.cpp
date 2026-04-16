@@ -7,6 +7,7 @@
 #include "metrics.h"
 #include "leader_election.h"
 #include "dijkstra.h"
+#include "logger.h"
 
 
 int main(int argc, char* argv[]) {
@@ -32,8 +33,7 @@ int main(int argc, char* argv[]) {
 
     if (graph_path.empty() || part_path.empty() || algo.empty()) {
         if (rank == 0) {
-            std::cerr << "Usage: ngs_mpi --graph <path> --part <path> "
-                      << "--algo <leader|dijkstra> [--source 0] [--rounds 200]\n";
+            LOG_ERROR("Usage: ngs_mpi --graph <path> --part <path> --algo <leader|dijkstra> [--source 0] [--rounds 200]");
         }
         MPI_Finalize();
         return 1;
@@ -41,8 +41,7 @@ int main(int argc, char* argv[]) {
 
     if (algo != "leader" && algo != "dijkstra") {
         if (rank == 0) {
-            std::cerr << "Error: unknown algorithm '" << algo
-                      << "'. Must be 'leader' or 'dijkstra'\n";
+            LOG_ERROR("Unknown algorithm '" << algo << "'");
         }
         MPI_Finalize();
         return 1;
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]) {
 
     if (rounds <= 0) {
         if (rank == 0) {
-            std::cerr << "Error: --rounds must be a positive integer\n";
+            LOG_ERROR("--rounds must be a positive integer");
         }
         MPI_Finalize();
         return 1;
@@ -65,8 +64,7 @@ int main(int argc, char* argv[]) {
         g = load_graph(graph_path);
         p = load_partition(part_path);
     } catch (const std::exception& ex) {
-        std::cerr << "[rank " << rank << "] Error loading files: "
-                << ex.what() << "\n";
+        LOG_ERROR("Error loading files: " << ex.what());
         load_ok = 0;
     }
 
@@ -80,8 +78,7 @@ int main(int argc, char* argv[]) {
 
     if (p.num_ranks != size) {
         if (rank == 0) {
-            std::cerr << "Error: partition has " << p.num_ranks
-                      << " ranks but MPI was launched with " << size << "\n";
+            LOG_ERROR("Partition mismatch: " << p.num_ranks << " ranks in file, but launched with " << size);
         }
         MPI_Finalize();
         return 1;
@@ -89,8 +86,7 @@ int main(int argc, char* argv[]) {
 
     if (p.num_nodes != g.num_nodes) {
         if (rank == 0) {
-            std::cerr << "Error: partition has " << p.num_nodes
-                      << " nodes but graph has " << g.num_nodes << "\n";
+            LOG_ERROR("Node mismatch: partition has " << p.num_nodes << " nodes, graph has " << g.num_nodes);
         }
         MPI_Finalize();
         return 1;
@@ -98,16 +94,14 @@ int main(int argc, char* argv[]) {
 
     if (source < 0 || source >= g.num_nodes) {
         if (rank == 0) {
-            std::cerr << "Error: --source " << source
-                      << " is out of range [0, " << g.num_nodes - 1 << "]\n";
+            LOG_ERROR("Source node " << source << " out of range [0, " << g.num_nodes - 1 << "]");
         }
         MPI_Finalize();
         return 1;
     }
 
     if (rank == 0) {
-        std::cout << "Running algorithm: " << algo
-                  << " with " << size << " ranks\n";
+        LOG_INFO("Running algorithm: " << algo << " with " << size << " ranks");
     }
 
     // leader election algorithm
@@ -128,12 +122,11 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < size; i++) {
                 if (all_leaders[i] != leader) {
                     all_agree = false;
-                    std::cerr << "[leader] DISAGREEMENT: rank " << i
-                            << " has leader " << all_leaders[i] << "\n";
+                    LOG_ERROR("[leader] DISAGREEMENT: rank " << i << " has leader " << all_leaders[i]);
                 }
             }
             if (all_agree) {
-                std::cout << "[leader] All ranks agree on leader: " << leader << "\n";
+                LOG_INFO("[leader] SUCCESS: All ranks verified agreement on leader: " << leader);
             }
         }
     }
@@ -142,12 +135,12 @@ int main(int argc, char* argv[]) {
     if (rank == 0) {
         print_metrics("Dijkstra", metrics);
         // print first 10 distances as sanity check
-        std::cout << "[dijkstra] Sample distances from source " << source << ":\n";
+        LOG_INFO("[dijkstra] Sample distances from source " << source << ":");
         for (int i = 0; i < std::min(10, g.num_nodes); i++) {
             if (dist[i] < (INT_MAX / 2)) {
-                std::cout << "  node " << i << ": " << dist[i] << "\n";
+                LOG_INFO("  node " << i << ": " << dist[i]);
             } else {
-                std::cout << "  node " << i << ": unreachable\n";
+                LOG_INFO("  node " << i << ": unreachable");
             }
         }
     }

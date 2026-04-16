@@ -1,4 +1,5 @@
 #include "dijkstra.h"
+#include "logger.h"
 #include <mpi.h>
 #include <vector>
 #include <iostream>
@@ -107,9 +108,8 @@ std::vector<int> run_dijkstra(
         for (int i = 0; i < num_nodes; i++) {
             if (dist[i] < INF) reachable++;
         }
-        std::cout << "[dijkstra] Source: " << source << "\n";
-        std::cout << "[dijkstra] Reachable nodes: " << reachable
-                  << " / " << num_nodes << "\n";
+        LOG_INFO("[dijkstra] Source: " << source);
+        LOG_INFO("[dijkstra] Reachable nodes: " << reachable << " / " << num_nodes);
     }
 
     return dist;

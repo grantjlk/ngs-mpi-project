@@ -208,3 +208,4 @@ communication cost dominates and parallelism offers limited benefit.
 * **Sparse Reductions:** Leader election currently broadcasts the full candidate
   vector each round via Allreduce. Propagating only changed values would reduce
   bandwidth significantly for large sparse graphs.
+  

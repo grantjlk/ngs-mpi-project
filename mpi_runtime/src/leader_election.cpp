@@ -1,4 +1,5 @@
 #include "leader_election.h"
+#include "logger.h"
 #include <mpi.h>
 #include <vector>
 #include <iostream>
@@ -86,8 +87,7 @@ int run_leader_election(
         // early termination if nothing changed
         if (global_changed == 0) {
             if (rank == 0) {
-                std::cout << "[leader] Converged early at round "
-                          << round + 1 << "\n";
+                LOG_INFO("[leader] Converged early at round " << round);
             }
             break;
         }
@@ -101,7 +101,7 @@ int run_leader_election(
         std::chrono::duration<double>(end - start).count();
 
     if (rank == 0) {
-        std::cout << "[leader] Elected leader: " << leader << "\n";
+        LOG_INFO("[leader] Elected leader: " << leader);
     }
 
     return leader;

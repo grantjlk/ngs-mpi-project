@@ -7,57 +7,57 @@ Saved to outputs/part_exp1_contiguous.json
   Rank 3: 125 nodes
   Edge cuts: 1494 / 1984 (75.3%)
 --- Leader Election [contiguous] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-Running algorithm: leader with 4 ranks
-[leader] Converged early at round 8
-[leader] Elected leader: 500
+[23:32:15][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:15][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:15][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:15][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:15][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:15][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:15][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:15][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:15][INFO]  Running algorithm: leader with 4 ranks
+[23:32:15][INFO]  [leader] Converged early at round 7
+[23:32:15][INFO]  [leader] Elected leader: 500
 
 === Metrics: Leader Election ===
-  Runtime:       0.0013 seconds
+  Runtime:       0.0007 seconds
   Iterations:    8
-  Allreduce calls (logical messages): 32
-  Approx. bytes sent:                 64128
+  Allreduce calls (logical messages): 64
+  Approx. bytes sent:                 64256
 ========================
 
-[leader] All ranks agree on leader: 500
+[23:32:15][INFO]  [leader] SUCCESS: All ranks verified agreement on leader: 500
 --- Dijkstra [contiguous] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-Running algorithm: dijkstra with 4 ranks
-[dijkstra] Source: 0
-[dijkstra] Reachable nodes: 501 / 501
+[23:32:16][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:16][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:16][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:16][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:16][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:16][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:16][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:16][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:16][INFO]  Running algorithm: dijkstra with 4 ranks
+[23:32:16][INFO]  [dijkstra] Source: 0
+[23:32:16][INFO]  [dijkstra] Reachable nodes: 501 / 501
 
 === Metrics: Dijkstra ===
-  Runtime:       0.0117 seconds
+  Runtime:       0.0221 seconds
   Iterations:    501
   Allreduce calls (logical messages): 4008
   Approx. bytes sent:                 16032
 ========================
 
-[dijkstra] Sample distances from source 0:
-  node 0: 0
-  node 1: 15
-  node 2: 56
-  node 3: 52
-  node 4: 75
-  node 5: 54
-  node 6: 67
-  node 7: 60
-  node 8: 58
-  node 9: 58
+[23:32:16][INFO]  [dijkstra] Sample distances from source 0:
+[23:32:16][INFO]    node 0: 0
+[23:32:16][INFO]    node 1: 15
+[23:32:16][INFO]    node 2: 56
+[23:32:16][INFO]    node 3: 52
+[23:32:16][INFO]    node 4: 75
+[23:32:16][INFO]    node 5: 54
+[23:32:16][INFO]    node 6: 67
+[23:32:16][INFO]    node 7: 60
+[23:32:16][INFO]    node 8: 58
+[23:32:16][INFO]    node 9: 58
 [random] Partitioned 501 nodes across 4 ranks
 Saved to outputs/part_exp1_random.json
   Rank 0: 126 nodes
@@ -66,57 +66,57 @@ Saved to outputs/part_exp1_random.json
   Rank 3: 125 nodes
   Edge cuts: 1496 / 1984 (75.4%)
 --- Leader Election [random] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-Running algorithm: leader with 4 ranks
-[leader] Converged early at round 10
-[leader] Elected leader: 500
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  Running algorithm: leader with 4 ranks
+[23:32:17][INFO]  [leader] Converged early at round 9
+[23:32:17][INFO]  [leader] Elected leader: 500
 
 === Metrics: Leader Election ===
-  Runtime:       0.0007 seconds
+  Runtime:       0.0006 seconds
   Iterations:    10
-  Allreduce calls (logical messages): 40
-  Approx. bytes sent:                 80160
+  Allreduce calls (logical messages): 80
+  Approx. bytes sent:                 80320
 ========================
 
-[leader] All ranks agree on leader: 500
+[23:32:17][INFO]  [leader] SUCCESS: All ranks verified agreement on leader: 500
 --- Dijkstra [random] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-Running algorithm: dijkstra with 4 ranks
-[dijkstra] Source: 0
-[dijkstra] Reachable nodes: 501 / 501
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:17][INFO]  Running algorithm: dijkstra with 4 ranks
+[23:32:17][INFO]  [dijkstra] Source: 0
+[23:32:17][INFO]  [dijkstra] Reachable nodes: 501 / 501
 
 === Metrics: Dijkstra ===
-  Runtime:       0.0129 seconds
+  Runtime:       0.0109 seconds
   Iterations:    501
   Allreduce calls (logical messages): 4008
   Approx. bytes sent:                 16032
 ========================
 
-[dijkstra] Sample distances from source 0:
-  node 0: 0
-  node 1: 15
-  node 2: 56
-  node 3: 52
-  node 4: 75
-  node 5: 54
-  node 6: 67
-  node 7: 60
-  node 8: 58
-  node 9: 58
+[23:32:17][INFO]  [dijkstra] Sample distances from source 0:
+[23:32:17][INFO]    node 0: 0
+[23:32:17][INFO]    node 1: 15
+[23:32:17][INFO]    node 2: 56
+[23:32:17][INFO]    node 3: 52
+[23:32:17][INFO]    node 4: 75
+[23:32:17][INFO]    node 5: 54
+[23:32:17][INFO]    node 6: 67
+[23:32:17][INFO]    node 7: 60
+[23:32:17][INFO]    node 8: 58
+[23:32:17][INFO]    node 9: 58
 
 === Experiment 2: Scalability (contiguous, vary ranks) ===
 [contiguous] Partitioned 501 nodes across 1 ranks
@@ -124,94 +124,94 @@ Saved to outputs/part_exp2_1.json
   Rank 0: 501 nodes
   Edge cuts: 0 / 1984 (0.0%)
 --- Leader Election [ranks=1] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 1 ranks
-Running algorithm: leader with 1 ranks
-[leader] Converged early at round 5
-[leader] Elected leader: 500
+[23:32:18][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:18][INFO]  [partition] Loaded 501 nodes across 1 ranks
+[23:32:18][INFO]  Running algorithm: leader with 1 ranks
+[23:32:18][INFO]  [leader] Converged early at round 4
+[23:32:18][INFO]  [leader] Elected leader: 500
 
 === Metrics: Leader Election ===
-  Runtime:       0.0008 seconds
+  Runtime:       0.0007 seconds
   Iterations:    5
-  Allreduce calls (logical messages): 5
-  Approx. bytes sent:                 10020
+  Allreduce calls (logical messages): 10
+  Approx. bytes sent:                 10040
 ========================
 
-[leader] All ranks agree on leader: 500
+[23:32:18][INFO]  [leader] SUCCESS: All ranks verified agreement on leader: 500
 --- Dijkstra [ranks=1] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 1 ranks
-Running algorithm: dijkstra with 1 ranks
-[dijkstra] Source: 0
-[dijkstra] Reachable nodes: 501 / 501
+[23:32:18][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:18][INFO]  [partition] Loaded 501 nodes across 1 ranks
+[23:32:18][INFO]  Running algorithm: dijkstra with 1 ranks
+[23:32:18][INFO]  [dijkstra] Source: 0
+[23:32:18][INFO]  [dijkstra] Reachable nodes: 501 / 501
 
 === Metrics: Dijkstra ===
-  Runtime:       0.0210 seconds
+  Runtime:       0.0152 seconds
   Iterations:    501
   Allreduce calls (logical messages): 1002
   Approx. bytes sent:                 4008
 ========================
 
-[dijkstra] Sample distances from source 0:
-  node 0: 0
-  node 1: 15
-  node 2: 56
-  node 3: 52
-  node 4: 75
-  node 5: 54
-  node 6: 67
-  node 7: 60
-  node 8: 58
-  node 9: 58
+[23:32:18][INFO]  [dijkstra] Sample distances from source 0:
+[23:32:18][INFO]    node 0: 0
+[23:32:18][INFO]    node 1: 15
+[23:32:18][INFO]    node 2: 56
+[23:32:18][INFO]    node 3: 52
+[23:32:18][INFO]    node 4: 75
+[23:32:18][INFO]    node 5: 54
+[23:32:18][INFO]    node 6: 67
+[23:32:18][INFO]    node 7: 60
+[23:32:18][INFO]    node 8: 58
+[23:32:18][INFO]    node 9: 58
 [contiguous] Partitioned 501 nodes across 2 ranks
 Saved to outputs/part_exp2_2.json
   Rank 0: 251 nodes
   Rank 1: 250 nodes
   Edge cuts: 964 / 1984 (48.6%)
 --- Leader Election [ranks=2] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 2 ranks
-[partition] Loaded 501 nodes across 2 ranks
-Running algorithm: leader with 2 ranks
-[leader] Converged early at round 8
-[leader] Elected leader: 500
+[23:32:19][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:19][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:19][INFO]  [partition] Loaded 501 nodes across 2 ranks
+[23:32:19][INFO]  [partition] Loaded 501 nodes across 2 ranks
+[23:32:19][INFO]  Running algorithm: leader with 2 ranks
+[23:32:19][INFO]  [leader] Converged early at round 7
+[23:32:19][INFO]  [leader] Elected leader: 500
 
 === Metrics: Leader Election ===
-  Runtime:       0.0008 seconds
+  Runtime:       0.0010 seconds
   Iterations:    8
-  Allreduce calls (logical messages): 16
-  Approx. bytes sent:                 32064
+  Allreduce calls (logical messages): 32
+  Approx. bytes sent:                 32128
 ========================
 
-[leader] All ranks agree on leader: 500
+[23:32:19][INFO]  [leader] SUCCESS: All ranks verified agreement on leader: 500
 --- Dijkstra [ranks=2] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 2 ranks
-[partition] Loaded 501 nodes across 2 ranks
-Running algorithm: dijkstra with 2 ranks
-[dijkstra] Source: 0
-[dijkstra] Reachable nodes: 501 / 501
+[23:32:19][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:19][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:19][INFO]  [partition] Loaded 501 nodes across 2 ranks
+[23:32:19][INFO]  [partition] Loaded 501 nodes across 2 ranks
+[23:32:19][INFO]  Running algorithm: dijkstra with 2 ranks
+[23:32:19][INFO]  [dijkstra] Source: 0
+[23:32:19][INFO]  [dijkstra] Reachable nodes: 501 / 501
 
 === Metrics: Dijkstra ===
-  Runtime:       0.0184 seconds
+  Runtime:       0.0136 seconds
   Iterations:    501
   Allreduce calls (logical messages): 2004
   Approx. bytes sent:                 8016
 ========================
 
-[dijkstra] Sample distances from source 0:
-  node 0: 0
-  node 1: 15
-  node 2: 56
-  node 3: 52
-  node 4: 75
-  node 5: 54
-  node 6: 67
-  node 7: 60
-  node 8: 58
-  node 9: 58
+[23:32:19][INFO]  [dijkstra] Sample distances from source 0:
+[23:32:19][INFO]    node 0: 0
+[23:32:19][INFO]    node 1: 15
+[23:32:19][INFO]    node 2: 56
+[23:32:19][INFO]    node 3: 52
+[23:32:19][INFO]    node 4: 75
+[23:32:19][INFO]    node 5: 54
+[23:32:19][INFO]    node 6: 67
+[23:32:19][INFO]    node 7: 60
+[23:32:19][INFO]    node 8: 58
+[23:32:19][INFO]    node 9: 58
 [contiguous] Partitioned 501 nodes across 4 ranks
 Saved to outputs/part_exp2_4.json
   Rank 0: 126 nodes
@@ -220,57 +220,57 @@ Saved to outputs/part_exp2_4.json
   Rank 3: 125 nodes
   Edge cuts: 1494 / 1984 (75.3%)
 --- Leader Election [ranks=4] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-Running algorithm: leader with 4 ranks
-[leader] Converged early at round 8
-[leader] Elected leader: 500
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  Running algorithm: leader with 4 ranks
+[23:32:20][INFO]  [leader] Converged early at round 7
+[23:32:20][INFO]  [leader] Elected leader: 500
 
 === Metrics: Leader Election ===
-  Runtime:       0.0008 seconds
+  Runtime:       0.0007 seconds
   Iterations:    8
-  Allreduce calls (logical messages): 32
-  Approx. bytes sent:                 64128
+  Allreduce calls (logical messages): 64
+  Approx. bytes sent:                 64256
 ========================
 
-[leader] All ranks agree on leader: 500
+[23:32:20][INFO]  [leader] SUCCESS: All ranks verified agreement on leader: 500
 --- Dijkstra [ranks=4] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 4 ranks
-[partition] Loaded 501 nodes across 4 ranks
-Running algorithm: dijkstra with 4 ranks
-[dijkstra] Source: 0
-[dijkstra] Reachable nodes: 501 / 501
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  [partition] Loaded 501 nodes across 4 ranks
+[23:32:20][INFO]  Running algorithm: dijkstra with 4 ranks
+[23:32:20][INFO]  [dijkstra] Source: 0
+[23:32:20][INFO]  [dijkstra] Reachable nodes: 501 / 501
 
 === Metrics: Dijkstra ===
-  Runtime:       0.0128 seconds
+  Runtime:       0.0104 seconds
   Iterations:    501
   Allreduce calls (logical messages): 4008
   Approx. bytes sent:                 16032
 ========================
 
-[dijkstra] Sample distances from source 0:
-  node 0: 0
-  node 1: 15
-  node 2: 56
-  node 3: 52
-  node 4: 75
-  node 5: 54
-  node 6: 67
-  node 7: 60
-  node 8: 58
-  node 9: 58
+[23:32:20][INFO]  [dijkstra] Sample distances from source 0:
+[23:32:20][INFO]    node 0: 0
+[23:32:20][INFO]    node 1: 15
+[23:32:20][INFO]    node 2: 56
+[23:32:20][INFO]    node 3: 52
+[23:32:20][INFO]    node 4: 75
+[23:32:20][INFO]    node 5: 54
+[23:32:20][INFO]    node 6: 67
+[23:32:20][INFO]    node 7: 60
+[23:32:20][INFO]    node 8: 58
+[23:32:20][INFO]    node 9: 58
 [contiguous] Partitioned 501 nodes across 8 ranks
 Saved to outputs/part_exp2_8.json
   Rank 0: 63 nodes
@@ -283,71 +283,71 @@ Saved to outputs/part_exp2_8.json
   Rank 7: 62 nodes
   Edge cuts: 1732 / 1984 (87.3%)
 --- Leader Election [ranks=8] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-Running algorithm: leader with 8 ranks
-[leader] Converged early at round 8
-[leader] Elected leader: 500
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  Running algorithm: leader with 8 ranks
+[23:32:21][INFO]  [leader] Converged early at round 7
+[23:32:21][INFO]  [leader] Elected leader: 500
 
 === Metrics: Leader Election ===
-  Runtime:       0.0012 seconds
+  Runtime:       0.0009 seconds
   Iterations:    8
-  Allreduce calls (logical messages): 64
-  Approx. bytes sent:                 128256
+  Allreduce calls (logical messages): 128
+  Approx. bytes sent:                 128512
 ========================
 
-[leader] All ranks agree on leader: 500
+[23:32:21][INFO]  [leader] SUCCESS: All ranks verified agreement on leader: 500
 --- Dijkstra [ranks=8] ---
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-[partition] Loaded 501 nodes across 8 ranks
-Running algorithm: dijkstra with 8 ranks
-[dijkstra] Source: 0
-[dijkstra] Reachable nodes: 501 / 501
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [graph] Loaded 501 nodes and 1984 edges from outputs/graph.json
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  [partition] Loaded 501 nodes across 8 ranks
+[23:32:21][INFO]  Running algorithm: dijkstra with 8 ranks
+[23:32:21][INFO]  [dijkstra] Source: 0
+[23:32:21][INFO]  [dijkstra] Reachable nodes: 501 / 501
 
 === Metrics: Dijkstra ===
-  Runtime:       0.0338 seconds
+  Runtime:       0.0115 seconds
   Iterations:    501
   Allreduce calls (logical messages): 8016
   Approx. bytes sent:                 32064
 ========================
 
-[dijkstra] Sample distances from source 0:
-  node 0: 0
-  node 1: 15
-  node 2: 56
-  node 3: 52
-  node 4: 75
-  node 5: 54
-  node 6: 67
-  node 7: 60
-  node 8: 58
-  node 9: 58
+[23:32:21][INFO]  [dijkstra] Sample distances from source 0:
+[23:32:21][INFO]    node 0: 0
+[23:32:21][INFO]    node 1: 15
+[23:32:21][INFO]    node 2: 56
+[23:32:21][INFO]    node 3: 52
+[23:32:21][INFO]    node 4: 75
+[23:32:21][INFO]    node 5: 54
+[23:32:21][INFO]    node 6: 67
+[23:32:21][INFO]    node 7: 60
+[23:32:21][INFO]    node 8: 58
+[23:32:21][INFO]    node 9: 58
 

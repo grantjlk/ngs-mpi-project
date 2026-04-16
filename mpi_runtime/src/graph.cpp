@@ -1,4 +1,5 @@
 #include "graph.h"
+#include "logger.h"
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include <stdexcept>
@@ -38,8 +39,7 @@ Graph load_graph(const std::string& path) {
         g.adj[edge.src].push_back({edge.dst, edge.weight});
     }
 
-    std::cout << "[graph] Loaded " << g.num_nodes << " nodes and "
-              << g.edges.size() << " edges from " << path << "\n";
+    LOG_INFO("[graph] Loaded " << g.num_nodes << " nodes and " << g.edges.size() << " edges from " << path);
 
     return g;
 }
