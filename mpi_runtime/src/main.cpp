@@ -115,10 +115,26 @@ int main(int argc, char* argv[]) {
 
     if (algo == "leader") {
         int leader = run_leader_election(g, p, rank, size, rounds, metrics);
+        
+        // verify all ranks agree on the same leader
+        std::vector<int> all_leaders(size);
+        MPI_Gather(&leader, 1, MPI_INT,
+                all_leaders.data(), 1, MPI_INT,
+                0, MPI_COMM_WORLD);
+        
         if (rank == 0) {
             print_metrics("Leader Election", metrics);
-            // verify all ranks agree
-            std::cout << "[leader] All nodes agree on leader: " << leader << "\n";
+            bool all_agree = true;
+            for (int i = 0; i < size; i++) {
+                if (all_leaders[i] != leader) {
+                    all_agree = false;
+                    std::cerr << "[leader] DISAGREEMENT: rank " << i
+                            << " has leader " << all_leaders[i] << "\n";
+                }
+            }
+            if (all_agree) {
+                std::cout << "[leader] All ranks agree on leader: " << leader << "\n";
+            }
         }
     }
     else if (algo == "dijkstra") {
