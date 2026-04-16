@@ -210,9 +210,7 @@ cross-rank synchronization, so propagation follows the graph diameter directly.
 * **Memory Scaling:** Replicating the full graph on every rank limits scalability
   to larger graphs. A production implementation would partition the adjacency list
   and use point-to-point `MPI_Send`/`MPI_Recv` for cross-rank edge relaxations.
-* **Partitioning:** Both strategies produce high edge cut rates (~75%) on
-  NetGameSim graphs due to their lack of spatial locality. METIS-style recursive
-  bisection could reduce edge cuts on graphs with natural clustering structure.
+* **Partitioning:** Both strategies produce high edge cut rates (~75%) on NetGameSim graphs due to their lack of meaningful node locality. More advanced partitioning methods could reduce edge cuts on graphs with stronger structural clustering.
 * **Sparse Reductions:** Leader election currently broadcasts the full candidate
   vector each round via Allreduce. Propagating only changed values would reduce
   bandwidth significantly for large sparse graphs.
