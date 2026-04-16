@@ -146,10 +146,10 @@ runtimes than contiguous partitioning.
 (75.3% vs 75.4%), which was not what I expected. I originally thought random
 partitioning would produce significantly more cross-rank edges, but that did
 not happen here. This suggests that NetGameSim graphs do not have meaningful
-locality with respect to node IDs — the IDs are effectively arbitrary, so
+locality with respect to node IDs. The IDs are effectively arbitrary, so
 contiguous partitioning does not preserve any useful structure.
 
-Because of this, the runtime differences are very small and somewhat noisy.
+Because of this, the runtime differences are very small.
 Random partitioning was slightly faster for leader election (0.0014s vs 0.0018s),
 but also required more rounds (10 vs 8). Given how small the timing differences
 are, this is likely measurement noise rather than a meaningful performance effect.
