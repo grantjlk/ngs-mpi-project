@@ -27,14 +27,12 @@ of MPI processes.
 Rather than implementing point-to-point message passing between individual nodes,
 we use `MPI_Allreduce` collectives as the communication primitive. This trades
 fine-grained messaging for simpler, deadlock-free synchronization. Every rank
-participates in every collective in the same order, which guarantees correctness
-and avoids the class of bugs that arise from mismatched point-to-point sends
-and receives.
+participates in every collective in the same order, which guarantees correctness.
 
 All ranks load the full graph and partition at startup. This replicate-everything
 memory model eliminates the need for ghost node bookkeeping and remote edge
 relaxation messages, at the cost of memory scaling. For graphs of this size
-(hundreds to low thousands of nodes) this is a practical and correct tradeoff.
+(hundreds to low thousands of nodes) this is a practical tradeoff.
 
 ---
 
@@ -46,10 +44,9 @@ relaxation messages, at the cost of memory scaling. For graphs of this size
   scaled to integers using $\max(1, \lfloor\text{cost} \times 20\rfloor)$, where
   cost is NetGameSim's internal [0,1] action cost. This guarantees positive integer
   weights as required by Dijkstra.
-* **Connectivity Assurance:** NetGameSim generates directed graphs that are not
-  strongly connected from all sources. To ensure correctness for both algorithms,
+* **Connectivity Assurance:** NetGameSim  generates directed graphs. To ensure correctness for both algorithms,
   the exporter mirrors every directed edge, producing an undirected graph. This
-  guarantees 100% reachability from any source node.
+  is to guarantee 100% reachability from any source node..
 * **Partitioning Logic:**
     * **Contiguous:** Assigns nodes via $\lfloor\text{nodeId} \times
       \text{numRanks} / \text{numNodes}\rfloor$, producing contiguous ranges per rank.
@@ -66,7 +63,7 @@ relaxation messages, at the cost of memory scaling. For graphs of this size
   early termination when no candidate changed. The elected leader is the maximum
   node ID in the graph, which all ranks agree on after convergence.
 
-* **Distributed Dijkstra:** Uses a two-phase synchronization per iteration:
+* **Distributed Dijkstra (Replicated Graph Model):** Uses a two-phase synchronization per iteration:
     1. Each rank finds its locally best unsettled node and proposes it via
        `MPI_Allreduce` (MIN) to determine the globally minimum tentative distance.
     2. A second `MPI_Allreduce` (MAX) over node IDs resolves which specific node
@@ -142,21 +139,30 @@ runtimes than contiguous partitioning.
 
 | Strategy | Edge Cuts | LE Rounds | LE Runtime | Dijkstra Runtime |
 | :--- | :--- | :--- | :--- | :--- |
-| **Contiguous** | 75.3% | 8 | 0.0005s | 0.0058s |
-| **Random** | 75.4% | 10 | 0.0013s | 0.0070s |
+| **Contiguous** | 75.3% | 8 | 0.0018s | 0.0111s |
+| **Random** | 75.4% | 10 | 0.0014s | 0.0128s |
 
-**Actual Results and Analysis:** Edge cuts were nearly identical between strategies
-(75.3% vs 75.4%), which was surprising. This is explained by the structure of
-NetGameSim graphs: they lack strong spatial locality, so contiguous node ID ranges
-do not correspond to densely connected clusters. Both strategies cut roughly the
-same fraction of edges.
+**Actual Results and Analysis:** The edge cut results were basically identical
+(75.3% vs 75.4%), which was not what I expected. I originally thought random
+partitioning would produce significantly more cross-rank edges, but that did
+not happen here. This suggests that NetGameSim graphs do not have meaningful
+locality with respect to node IDs — the IDs are effectively arbitrary, so
+contiguous partitioning does not preserve any useful structure.
 
-Despite similar edge cuts, Random partitioning was $2.6\times$ slower for leader
-election (10 rounds vs 8). This suggests that scrambling node IDs increases the
-logical hop distance the maximum candidate must travel before reaching all ranks,
-even though the physical edge cut count is similar. Dijkstra showed a smaller but
-consistent slowdown ($1.21\times$), consistent with the additional Allreduce
-overhead from the extra cross-rank coordination.
+Because of this, the runtime differences are very small and somewhat noisy.
+Random partitioning was slightly faster for leader election (0.0014s vs 0.0018s),
+but also required more rounds (10 vs 8). Given how small the timing differences
+are, this is likely measurement noise rather than a meaningful performance effect.
+
+Dijkstra shows a small slowdown under random partitioning (0.0128s vs 0.0111s),
+which is consistent with the hypothesis, but the difference is minor. Overall,
+these results indicate that partitioning strategy has little impact on performance
+for this graph, primarily because the edge cut rate is already very high in both
+cases (~75%).
+
+**Key Insight:** On this graph, partition quality has minimal impact on performance because node IDs do not encode meaningful locality. As a result, both contiguous and random partitioning produce similarly high edge cut rates, so the system’s performance is dominated by algorithmic communication patterns rather than how the graph is split across ranks.
+
+---
 
 ### Experiment 2: Scalability with Varying Rank Count (Contiguous)
 
@@ -170,26 +176,28 @@ degradation at 8 ranks due to Allreduce overhead scaling with rank count.
 
 | Ranks | LE Rounds | LE Runtime | Dijkstra Runtime | Speedup ($T_1/T_n$) |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | 5 | 0.0003s | 0.0085s | 1.00x |
-| 2 | 8 | 0.0004s | 0.0055s | 1.54x |
-| 4 | 8 | 0.0023s | 0.0058s | 1.46x |
-| 8 | 8 | 0.0070s | 0.0088s | 0.96x |
+| 1 | 5 | 0.0006s | 0.0161s | 1.00x |
+| 2 | 8 | 0.0007s | 0.0086s | 1.87x |
+| 4 | 8 | 0.0011s | 0.0126s | 1.28x |
+| 8 | 8 | 0.0009s | 0.0185s | 0.87x |
 
-**Actual Results and Analysis:** Peak speedup occurred at 2 ranks (1.54x), matching
-the hypothesis. Beyond 2 ranks, Dijkstra's 501 iterations each require two
-`MPI_Allreduce` calls, and the overhead of these collectives across more ranks
-outweighs the benefit of parallelism. At 8 ranks the system is communication-bound,
-with a speedup of 0.96x — slightly slower than sequential.
+**Actual Results and Analysis:** Peak speedup occurred at 2 ranks (1.87x), which
+matches the hypothesis. At 4 ranks performance dropped to 1.28x, and at 8 ranks
+the system became slower than the single-rank baseline (0.87x).
 
-Leader election rounds stayed constant at 8 from 2 to 8 ranks, suggesting the
-graph diameter within each partition stabilized quickly. The single-rank case
-converged in 5 rounds because there are no cross-rank boundaries, so propagation
-follows the graph diameter directly.
+The main reason for this is the cost of collective communication. Dijkstra performs
+two `MPI_Allreduce` operations per iteration, and with 501 iterations this creates
+a large amount of synchronization overhead. As the number of ranks increases, the
+latency cost of these collectives grows and begins to dominate the runtime.
 
-**Key Insight:** This result illustrates a fundamental tradeoff in collective-based
-distributed algorithms. `MPI_Allreduce` is O(log P) in rounds but involves real
-network latency per call. For small graphs where per-iteration compute is cheap,
-communication cost dominates and parallelism offers limited benefit.
+This effect is especially visible beyond 2 ranks, where additional processes increase synchronization overhead without reducing the number of iterations required for convergence. Each iteration still requires the same fixed number of global reductions, so scalability is limited by communication rather than computation.
+
+Leader election rounds remained stable at 8 from 2 to 8 ranks, suggesting that the
+logical propagation distance in the graph did not change significantly with further
+partitioning. The single-rank case converged in 5 rounds because there is no
+cross-rank synchronization, so propagation follows the graph diameter directly.
+
+**Key Insight:** The scalability results show that the system is fundamentally communication-bound rather than compute-bound. Because each iteration of Dijkstra requires a fixed number of global MPI_Allreduce operations, increasing the number of ranks increases synchronization cost without reducing the number of iterations, leading to diminishing and eventually negative returns from parallelism.
 
 ---
 
