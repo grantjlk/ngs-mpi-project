@@ -60,6 +60,9 @@ int run_leader_election(
         );
         if (rc1 != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc1);
 
+        metrics.messages_sent += num_ranks;
+        metrics.bytes_sent    += num_ranks * num_nodes * sizeof(int);
+
         // track if anything changed globally
         int local_changed  = changed ? 1 : 0;
         int global_changed = 0;
@@ -75,7 +78,8 @@ int run_leader_election(
         if (rc2 != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc2);
 
         metrics.messages_sent += num_ranks;
-        metrics.bytes_sent    += num_ranks * num_nodes * sizeof(int);
+        metrics.bytes_sent    += num_ranks * sizeof(int);
+        
 
         candidate = global_candidate;
 
