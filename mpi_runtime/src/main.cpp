@@ -59,12 +59,21 @@ int main(int argc, char* argv[]) {
     // load graph and partition on all ranks
     Graph g;
     Partition p;
+    int load_ok = 1;
+
     try {
         g = load_graph(graph_path);
         p = load_partition(part_path);
     } catch (const std::exception& ex) {
         std::cerr << "[rank " << rank << "] Error loading files: "
-                  << ex.what() << "\n";
+                << ex.what() << "\n";
+        load_ok = 0;
+    }
+
+    // all ranks agree on whether loading succeeded
+    int global_ok = 0;
+    MPI_Allreduce(&load_ok, &global_ok, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+    if (global_ok == 0) {
         MPI_Finalize();
         return 1;
     }
