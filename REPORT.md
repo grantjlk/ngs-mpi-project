@@ -70,7 +70,7 @@ relaxation messages, at the cost of memory scaling. For graphs of this size
        holds that distance, breaking ties deterministically by choosing the largest ID.
     3. All ranks settle that node and relax its outgoing edges locally, since every
        rank holds the full adjacency list.
-
+* **Message Formats:** Leader election performs one `MPI_Allreduce` per round over a vector of size N (one candidate ID per node), along with a second scalar reduction for convergence detection. Dijkstra performs two scalar `MPI_Allreduce` operations per iteration to determine the global minimum distance and corresponding node. All values are represented as 32-bit integers (`MPI_INT`).
 * **Memory Model:** All ranks load the full adjacency list at startup. This
   simplifies edge relaxation by removing ghost node messaging overhead, at the cost
   of O(N+E) memory per rank. For graphs in the hundreds-of-nodes range this is

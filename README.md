@@ -315,13 +315,11 @@ We approximate communication cost as **O(ranks)** per collective for comparison 
 ## Running Tests
 
 ```bash
-# Unit tests — must be run from the mpi_runtime/ directory
-# so that relative paths like "tests/small_graph.json" resolve correctly
-cd mpi_runtime
-../build/unit_tests
+# Unit tests
+cd mpi_runtime && ../build/unit_tests
 
-# MPI tests — also run from mpi_runtime/
-mpirun -n 4 ../build/mpi_tests
+# MPI tests
+cd mpi_runtime && mpirun -n 4 ../build/mpi_tests
 ```
 
 All 11 tests should pass (7 unit, 4 MPI).
