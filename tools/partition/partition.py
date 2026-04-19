@@ -31,6 +31,8 @@ def partition_graph(graph_path, num_ranks, output_path, strategy='contiguous', s
     partition = {
         "num_ranks": num_ranks,
         "num_nodes": num_nodes,
+        "seed": seed,
+        "strategy": strategy,
         "ownership": ownership
     }
 
@@ -38,6 +40,7 @@ def partition_graph(graph_path, num_ranks, output_path, strategy='contiguous', s
         json.dump(partition, f, indent=2)
 
     print(f"[{strategy}] Partitioned {num_nodes} nodes across {num_ranks} ranks")
+    print(f"Seed: {seed}")
     print(f"Saved to {output_path}")
 
     counts = [0] * num_ranks

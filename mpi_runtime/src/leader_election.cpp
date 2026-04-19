@@ -47,8 +47,10 @@ int run_leader_election(
         }
 
         // --- share candidates across all ranks ---
-        // simple approach: allreduce with MAX so every rank
-        // ends up with the global best candidate per node
+        // All ranks hold the full candidate[] vector, so candidate[neighbor]
+        // always reflects the post-Allreduce value from the previous round.
+        // MPI_Allreduce(MAX) merges local updates globally — no propagation
+        // is ever missed since every rank sees all edges during local update.
         std::vector<int> global_candidate(num_nodes);
         // checked mpi call
         int rc1 = MPI_Allreduce(
