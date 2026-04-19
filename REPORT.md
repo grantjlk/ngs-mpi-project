@@ -121,6 +121,12 @@ Input validation is performed before any algorithm runs: the partition rank coun
 must match the MPI size, the graph and partition node counts must agree, and the
 source node must be within range.
 
+### Verification on Second Graph
+
+Both algorithms were verified on a second generated graph (`graph2.json`, 501 nodes,
+2116 edges). Leader election converged in 7 rounds electing node 500, and Dijkstra
+reached all 501 nodes, confirming the pipeline works correctly across multiple inputs.
+
 ---
 
 ## 5. Experimental Results

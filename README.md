@@ -28,6 +28,23 @@ mpirun -n 4 ./build/ngs_mpi \
   --part outputs/part.json \
   --algo dijkstra --source 0
 ```
+
+### Second Graph
+
+A second pre-generated graph is included at `outputs/graph2.json` to satisfy the
+two-graph requirement. Run it the same way:
+
+```bash
+python3 tools/partition/partition.py outputs/graph2.json \
+  --ranks 4 --out outputs/part2.json --strategy contiguous
+
+mpirun -n 4 ./build/ngs_mpi --graph outputs/graph2.json \
+  --part outputs/part2.json --algo leader --rounds 200
+
+mpirun -n 4 ./build/ngs_mpi --graph outputs/graph2.json \
+  --part outputs/part2.json --algo dijkstra --source 0
+```
+
 ---
 
 ## Reproducibility
